@@ -1,3 +1,16 @@
+"""
+storage.py - Core data storage layer for MyDB RDBMS
+
+Provides:
+- Table: Represents a database table with rows, columns, and constraints
+- Database: Manages collection of tables
+
+Supports:
+- Primary key constraints
+- Unique column constraints  
+- Basic CRUD operations (INSERT, SELECT, UPDATE, DELETE)
+- Simple equality-based WHERE clauses
+"""
 from typing import List, Dict, Any, Optional, Set, Tuple, Union
 
 class Table:
@@ -5,6 +18,10 @@ class Table:
         """
         Initialize a new table.
         columns: List of (column_name, data_type) tuples. data_type is a string "INTEGER", "TEXT", etc.
+        
+        Example:
+            >>> table = Table('users', [('id', 'INTEGER'), ('name', 'TEXT')], 
+            ...               primary_key='id')
         """
         self.name = name
         self.columns = columns
@@ -32,6 +49,9 @@ class Table:
         """
         Insert a row into the table.
         Raises ValueError if constraints are violated or value count mismatch.
+        
+        Note: Type validation is intentionally minimal in Phase 1.
+              Parser (Phase 2) will handle type conversion.
         """
         if len(values) != len(self.columns):
             raise ValueError(f"Column count mismatch. Expected {len(self.columns)}, got {len(values)}")
@@ -67,7 +87,11 @@ class Table:
         Select rows from the table.
         columns: List of column names to return. If None, return all.
         where: Dict of {column: value} for equality filtering.
-        Returns: List of dictionaries representing rows.
+        
+        Returns: List of dictionaries where keys are column names.
+        Example: [{'id': 1, 'name': 'Alice'}, {'id': 2, 'name': 'Bob'}]
+        
+        Note: 'where' values should match the column's data type (no automatic conversion).
         """
         target_columns = columns or self.column_names
         
