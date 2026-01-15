@@ -371,6 +371,8 @@ class Table:
         return count
 
 
+import json
+
 class Database:
     def __init__(self):
         self.tables: Dict[str, Table] = {}
@@ -389,3 +391,62 @@ class Database:
         if name not in self.tables:
             raise ValueError(f"Table '{name}' not found")
         del self.tables[name]
+
+    def save_to_file(self, filename: str):
+        """
+        Save the database to a file (JSON format, .josedb extension recommended).
+        """
+        data = {
+            "tables": {}
+        }
+        for name, table in self.tables.items():
+            data["tables"][name] = {
+                "columns": table.columns,
+                "primary_key": table.primary_key,
+                "unique_columns": table.unique_columns,
+                "rows": table.rows
+            }
+        
+        with open(filename, 'w') as f:
+            json.dump(data, f, indent=4)
+
+    def load_from_file(self, filename: str):
+        """
+        Load the database from a file.
+        This rebuilds the in-memory state including all indexes.
+        """
+        with open(filename, 'r') as f:
+            data = json.load(f)
+            
+        self.tables = {}
+        for name, table_data in data["tables"].items():
+            # Create table structure (Inits empty indexes)
+            table = Table(
+                name, 
+                [tuple(c) for c in table_data["columns"]], # Convert back to tuples
+                table_data["primary_key"],
+                table_data["unique_columns"]
+            )
+            
+            # Load rows
+            table.rows = table_data["rows"]
+            
+            # Rebuild Indexes!
+            # We iterate through all loaded rows and insert them into the Index objects manually.
+            # This is necessary because setting `table.rows` directly bypasses `insert_row` logic.
+            
+            for row_idx, row in enumerate(table.rows):
+                # Update PK Index
+                if table.primary_key:
+                    pk_idx = table._col_map[table.primary_key]
+                    val = row[pk_idx]
+                    table.indexes[table.primary_key].insert(val, row_idx)
+                
+                # Update Unique Indexes
+                for col in table.unique_columns:
+                    col_idx = table._col_map[col]
+                    val = row[col_idx]
+                    table.indexes[col].insert(val, row_idx)
+
+            self.tables[name] = table
+

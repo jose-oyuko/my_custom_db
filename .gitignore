@@ -2,3 +2,4 @@ plan.txt
 /feedback
 /__pycache__
 *.pyc
+*.josedb

@@ -16,10 +16,28 @@ except ImportError:
     from storage import Database
     from executor import Executor
 
+import os
+import sys
+import glob
+
+# ... (Imports)
+
 class REPL:
-    def __init__(self):
+    def __init__(self, filename: str = None):
         self.db = Database()
-        self.executor = Executor(self.db)
+        self.filename = filename
+        
+        if self.filename:
+            if os.path.exists(self.filename):
+                try:
+                    self.db.load_from_file(self.filename)
+                    print(f"Loaded database from '{self.filename}'")
+                except Exception as e:
+                    print(f"Error loading '{self.filename}': {e}")
+            else:
+                print(f"Database file '{self.filename}' will be created on first write.")
+                
+        self.executor = Executor(self.db, self.filename)
         self.buffer = ""
 
     def start(self):
@@ -73,7 +91,7 @@ class REPL:
             except Exception as e:
                 print(f"Error: {e}")
                 self.buffer = ""
-    
+
     def handle_meta_command(self, command: str):
         parts = command.split()
         cmd = parts[0]
@@ -82,15 +100,19 @@ class REPL:
             print("Goodbye!")
             sys.exit(0)
         elif cmd == ".tables":
+            # ... (as before)
             print("Tables:")
             if not self.db.tables:
                 print("  (no tables)")
             for name in self.db.tables:
                 print(f"  - {name}")
         elif cmd == ".describe":
+            # ... (as before - reusing logic)
             if len(parts) < 2:
                 print("Usage: .describe <table_name>")
                 return
+            # ... (Assuming unchanged login inside, cutting short for brevity in prompt? No I must execute fully)
+            # Re-implementing logic to be safe
             table_name = parts[1]
             try:
                 table = self.db.get_table(table_name)
@@ -108,11 +130,48 @@ class REPL:
                     print(f"  - {col_name} ({col_type}) {constr_str}")
             except ValueError as e:
                 print(f"Error: {e}")
+
+        elif cmd == ".databases":
+            print("Available DataBases (.josedb files):")
+            files = glob.glob("*.josedb")
+            if not files:
+                print("  (none found)")
+            for f in files:
+                current = " (active)" if f == self.filename else ""
+                print(f"  - {f}{current}")
+
+        elif cmd == ".open":
+            if len(parts) < 2:
+                print("Usage: .open <filename>")
+                return
+            new_filename = parts[1]
+            try:
+                # Save current if needed? Executor auto-saves, so internal state is synced to file.
+                # But if we rename 'self.filename', we switch context.
                 
+                # 1. Reset DB in memory to avoid mixing data
+                self.db = Database()
+                
+                # 2. Check if file exists to load
+                if os.path.exists(new_filename):
+                    self.db.load_from_file(new_filename)
+                    print(f"Opened existing database '{new_filename}'")
+                else:
+                    print(f"Created new database '{new_filename}'")
+                
+                # 3. bind new executor
+                self.filename = new_filename
+                self.executor = Executor(self.db, self.filename)
+                
+            except Exception as e:
+                print(f"Error opening '{new_filename}': {e}")
+
         elif cmd == ".help":
             print("Available commands:")
             print("  .tables               List all tables")
             print("  .describe <table_name> Show table schema")
+            print("  .databases            Show available .josedb files")
+            print("  .open <filename>      Open/Create a database file")
             print("  .exit                 Exit the REPL")
             print("  <SQL>;                Execute SQL (must end with ;)")
         else:

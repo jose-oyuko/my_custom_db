@@ -3,8 +3,9 @@ from storage import Database, Table
 from sql_parser import parse_command
 
 class Executor:
-    def __init__(self, db: Database):
+    def __init__(self, db: Database, db_file: Optional[str] = None):
         self.db = db
+        self.db_file = db_file
 
     def execute(self, sql: str) -> Union[str, List[Dict[str, Any]]]:
         """
@@ -15,20 +16,34 @@ class Executor:
             parsed = parse_command(sql)
             command = parsed['command']
             
+            result = None
+            modified = False
+            
             if command == 'CREATE_TABLE':
-                return self._execute_create_table(parsed)
+                result = self._execute_create_table(parsed)
+                modified = True
             elif command == 'INSERT':
-                return self._execute_insert(parsed)
+                result = self._execute_insert(parsed)
+                modified = True
             elif command == 'SELECT':
-                return self._execute_select(parsed)
+                result = self._execute_select(parsed)
             elif command == 'UPDATE':
-                return self._execute_update(parsed)
+                result = self._execute_update(parsed)
+                modified = True
             elif command == 'DELETE':
-                return self._execute_delete(parsed)
+                result = self._execute_delete(parsed)
+                modified = True
             elif command == 'DROP_TABLE':
-                return self._execute_drop_table(parsed)
+                result = self._execute_drop_table(parsed)
+                modified = True
             else:
                 raise ValueError(f"Unsupported command: {command}")
+            
+            # Auto-Save if modified and file is set
+            if modified and self.db_file:
+                self.db.save_to_file(self.db_file)
+                
+            return result
                 
         except Exception as e:
             return f"Error: {str(e)}"
