@@ -46,10 +46,10 @@ def dashboard():
     total_tx = len(transactions)
     
     # 2. Get Recent Transactions (with JOIN to show Merchant Name!)
-    # "SELECT merchants.name, transactions.amount, transactions.customer, transactions.status, transactions.date 
+    # "SELECT merchants.name, transactions.id, transactions.amount, transactions.customer, transactions.status, transactions.date 
     #  FROM merchants JOIN transactions ON merchants.id = transactions.merchant_id"
     
-    sql = "SELECT merchants.name, transactions.amount, transactions.customer, transactions.status, transactions.date FROM merchants JOIN transactions ON merchants.id = transactions.merchant_id"
+    sql = "SELECT merchants.name, transactions.id, transactions.amount, transactions.customer, transactions.status, transactions.date FROM merchants JOIN transactions ON merchants.id = transactions.merchant_id"
     recent_tx = executor.execute(sql)
     
     # Sort by date desc (python side) if needed, our DB inserts append so usually sorted by ID
@@ -101,6 +101,19 @@ def terminal_page():
         return redirect(url_for('dashboard'))
         
     return render_template('terminal.html', merchants=merchants)
+
+@app.route('/delete_transaction/<int:tx_id>', methods=['POST'])
+def delete_transaction(tx_id):
+    sql = f"DELETE FROM transactions WHERE id = {tx_id}"
+    executor.execute(sql)
+    return redirect(url_for('dashboard'))
+
+@app.route('/update_merchant/<int:merchant_id>', methods=['POST'])
+def update_merchant(merchant_id):
+    new_rate = request.form.get('commission')
+    sql = f"UPDATE merchants SET commission = {new_rate} WHERE id = {merchant_id}"
+    executor.execute(sql)
+    return redirect(url_for('merchants_page'))
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)

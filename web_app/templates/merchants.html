@@ -17,6 +17,7 @@
                         <th class="px-6 py-3">ID</th>
                         <th class="px-6 py-3">Business Name</th>
                         <th class="px-6 py-3">Commission (%)</th>
+                        <th class="px-6 py-3">Actions</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100">
@@ -24,7 +25,15 @@
                     <tr class="hover:bg-gray-50">
                         <td class="px-6 py-4 text-gray-500">#{{ m.id }}</td>
                         <td class="px-6 py-4 font-medium">{{ m.name }}</td>
-                        <td class="px-6 py-4">{{ m.commission }}%</td>
+                        <td class="px-6 py-4">
+                            <form method="POST" action="/update_merchant/{{ m.id }}" class="flex items-center gap-2">
+                                <input type="number" name="commission" value="{{ m.commission }}"
+                                    class="w-16 px-2 py-1 border border-gray-300 rounded text-sm">
+                                <button type="submit"
+                                    class="text-pesablue hover:text-blue-700 text-sm font-medium">Update</button>
+                            </form>
+                        </td>
+                        <td class="px-6 py-4 text-gray-400 text-sm">Edit rate above</td>
                     </tr>
                     {% endfor %}
                 </tbody>
