@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mini-Pesapal Admin</title>
+    <!-- Tailwind CSS (CDN) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+          theme: {
+            extend: {
+              colors: {
+                pesablue: '#0072CE', // Approx Pesapal Blue
+                pesadark: '#0F172A',
+              }
+            }
+          }
+        }
+    </script>
+</head>
+<body class="bg-gray-50 font-sans text-gray-800">
+
+    <div class="flex h-screen overflow-hidden">
+        <!-- Sidebar -->
+        <aside class="w-64 bg-pesadark text-white flex-shrink-0 hidden md:block">
+            <div class="p-6 border-b border-gray-700">
+                <h1 class="text-2xl font-bold text-pesablue">PesaPal<span class="text-white text-sm opacity-70">mini</span></h1>
+            </div>
+            <nav class="mt-6 px-4 space-y-2">
+                <a href="{{ url_for('dashboard') }}" class="block py-2.5 px-4 rounded transition duration-200 hover:bg-pesablue hover:text-white {{ 'bg-pesablue' if request.endpoint == 'dashboard' else 'text-gray-400' }}">
+                    Dashboard
+                </a>
+                <a href="{{ url_for('merchants_page') }}" class="block py-2.5 px-4 rounded transition duration-200 hover:bg-pesablue hover:text-white {{ 'bg-pesablue' if request.endpoint == 'merchants_page' else 'text-gray-400' }}">
+                    Merchants
+                </a>
+                <a href="{{ url_for('terminal_page') }}" class="block py-2.5 px-4 rounded transition duration-200 hover:bg-pesablue hover:text-white {{ 'bg-pesablue' if request.endpoint == 'terminal_page' else 'text-gray-400' }}">
+                    POS Terminal
+                </a>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <div class="flex-1 flex flex-col overflow-hidden">
+            <!-- Top Header -->
+            <header class="bg-white shadow-sm h-16 flex items-center justify-between px-6">
+                <h2 class="text-xl font-semibold text-gray-700">{{ title }}</h2>
+                <div class="flex items-center space-x-4">
+                    <span class="text-sm text-gray-500">Admin User</span>
+                    <div class="h-8 w-8 rounded-full bg-pesablue text-white flex items-center justify-center font-bold">A</div>
+                </div>
+            </header>
+
+            <!-- Scrollable Content -->
+            <main class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 p-6">
+                {% block content %}{% endblock %}
+            </main>
+        </div>
+    </div>
+
+</body>
+</html>

@@ -1,0 +1,61 @@
+{% extends "layout.html" %}
+
+{% set title = "Merchant Management" %}
+
+{% block content %}
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+    <!-- List -->
+    <div class="lg:col-span-2">
+        <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-100">
+                <h3 class="text-lg font-semibold text-gray-800">Registered Merchants</h3>
+            </div>
+            <table class="w-full text-left">
+                <thead>
+                    <tr class="bg-gray-50 text-gray-600 text-xs uppercase">
+                        <th class="px-6 py-3">ID</th>
+                        <th class="px-6 py-3">Business Name</th>
+                        <th class="px-6 py-3">Commission (%)</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                    {% for m in merchants %}
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4 text-gray-500">#{{ m.id }}</td>
+                        <td class="px-6 py-4 font-medium">{{ m.name }}</td>
+                        <td class="px-6 py-4">{{ m.commission }}%</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Add Form -->
+    <div class="lg:col-span-1">
+        <div class="bg-white rounded-lg shadow-sm p-6 sticky top-6">
+            <h3 class="text-lg font-semibold text-gray-800 mb-4">Onboard Merchant</h3>
+            <form method="POST">
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-bold mb-2">Business Name</label>
+                    <input type="text" name="name" required
+                        class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-pesablue">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-bold mb-2">Commission Rate (%)</label>
+                    <input type="number" name="rate" required
+                        class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-pesablue">
+                </div>
+                <button type="submit"
+                    class="w-full bg-pesablue text-white font-bold py-2 px-4 rounded hover:bg-blue-700 transition">
+                    Register Merchant
+                </button>
+                <p class="text-xs text-gray-500 mt-2 text-center">
+                    Auto-saves to database.
+                </p>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

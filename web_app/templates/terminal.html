@@ -1,0 +1,56 @@
+{% extends "layout.html" %}
+
+{% set title = "Virtual POS Terminal" %}
+
+{% block content %}
+<div class="max-w-md mx-auto bg-white rounded-xl shadow-md overflow-hidden md:max-w-2xl mt-10">
+    <div class="md:flex">
+        <div class="md:flex-shrink-0 bg-pesablue md:w-48 flex items-center justify-center">
+            <div class="text-white text-center p-4">
+                <svg class="h-16 w-16 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z">
+                    </path>
+                </svg>
+                <p class="font-bold">Secure Payment</p>
+            </div>
+        </div>
+        <div class="p-8 w-full">
+            <div class="uppercase tracking-wide text-sm text-pesablue font-semibold">New Transaction</div>
+            <p class="mt-2 text-gray-500">Simulate a customer payment.</p>
+
+            <form method="POST" class="mt-6">
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-bold mb-2">Select Merchant</label>
+                    <select name="merchant_id"
+                        class="w-full px-3 py-2 border border-gray-300 rounded bg-white focus:outline-none focus:border-pesablue">
+                        {% for m in merchants %}
+                        <option value="{{ m.id }}">{{ m.name }} ({{ m.commission }}%)</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-bold mb-2">Customer Name</label>
+                    <input type="text" name="customer" placeholder="e.g. John Doe" required
+                        class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-pesablue">
+                </div>
+
+                <div class="mb-6">
+                    <label class="block text-gray-700 text-sm font-bold mb-2">Amount (KES)</label>
+                    <input type="number" name="amount" placeholder="5000" required
+                        class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-pesablue">
+                </div>
+
+                <button type="submit"
+                    class="w-full bg-green-500 text-white font-bold py-3 px-4 rounded hover:bg-green-600 transition flex justify-center items-center">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                    Process Payment
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
