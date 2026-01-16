@@ -1,4 +1,4 @@
-plan.txt
+*.txt
 /feedback
 /__pycache__
 *.pyc

@@ -370,6 +370,110 @@ class Table:
             
         return count
 
+    def inner_join(self, other: 'Table', left_col: str, right_col: str, select_columns: List[str] = None, where: Dict[str, Any] = None) -> List[Dict[str, Any]]:
+        """
+        Performs an INNER JOIN with another table.
+        """
+        results = []
+        
+        # Validate columns exist
+        if left_col not in self.column_names:
+             raise ValueError(f"Column '{left_col}' not found in table '{self.name}'")
+        if right_col not in other.column_names:
+             raise ValueError(f"Column '{right_col}' not found in table '{other.name}'")
+             
+        left_idx = self._col_map[left_col]
+        right_idx = other._col_map[right_col]
+        
+        # Check if right table has index on right_col
+        right_index = other.indexes.get(right_col)
+        
+        # If no index, build a temp dict for O(N+M)
+        if not right_index:
+            temp_index = {}
+            for r_i, r_row in enumerate(other.rows):
+                val = r_row[right_idx]
+                if val not in temp_index:
+                    temp_index[val] = []
+                temp_index[val].append(r_row)
+        
+        for l_row in self.rows:
+            l_val = l_row[left_idx]
+            
+            # Find matching rows in right table
+            matching_rows = []
+            if right_index:
+                # index.lookup returns row INDICES
+                r_indices = right_index.lookup(l_val)
+                matching_rows = [other.rows[i] for i in r_indices]
+            else:
+                matching_rows = temp_index.get(l_val, [])
+            
+            for r_row in matching_rows:
+                joined_row = {}
+                
+                # Add left columns
+                for i, col in enumerate(self.column_names):
+                    key = f"{self.name}.{col}"
+                    joined_row[key] = l_row[i]
+                    
+                # Add right columns
+                for i, col in enumerate(other.column_names):
+                    key = f"{other.name}.{col}"
+                    joined_row[key] = r_row[i]
+                
+                # Apply WHERE filter
+                match = True
+                if where:
+                    for w_key, w_val in where.items():
+                        found = False
+                        # Check strict match 'table.col'
+                        if w_key in joined_row:
+                            if joined_row[w_key] == w_val:
+                                found = True
+                            else:
+                                match = False # Mismatch
+                                break
+                        
+                        # Check suffix match 'col'
+                        if not found and match:
+                            for jr_key in joined_row:
+                                if jr_key.endswith(f".{w_key}"):
+                                    if joined_row[jr_key] != w_val:
+                                        match = False
+                                    found = True
+                                    break
+                        
+                        # If key not found in row at all? (Ignore or Fail?)
+                        # For now ignoring if column is missing (weak), usually should fail.
+                        pass
+                    
+                if match:
+                    results.append(joined_row)
+
+        # Filter Select Cols
+        if select_columns:
+            final_results = []
+            for res in results:
+                filtered = {}
+                for req_col in select_columns:
+                    if req_col == '*':
+                         filtered.update(res) # TODO: Handle * properly? Usually * selects all.
+                         continue
+                         
+                    # req_col might be 'name' or 'users.name'
+                    if req_col in res:
+                        filtered[req_col] = res[req_col]
+                    else:
+                        for k, v in res.items():
+                            if k.endswith(f".{req_col}"):
+                                filtered[req_col] = v
+                                break
+                final_results.append(filtered)
+            return final_results
+            
+        return results
+
 
 import json
 

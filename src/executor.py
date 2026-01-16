@@ -69,8 +69,73 @@ class Executor:
         table_name = parsed['table']
         columns = parsed['columns']
         where = parsed['where']
+        join_info = parsed.get('join')
         
         table = self.db.get_table(table_name)
+        
+        if join_info:
+            join_table_name = join_info['table']
+            other_table = self.db.get_table(join_table_name)
+            
+            # Resolve fully qualified column names in ON clause
+            # User might strict 't1.id = t2.uid' OR 'id = uid'
+            l_on = join_info['on_left']
+            r_on = join_info['on_right']
+            
+            # Simple resolution: if '.' in name, split. Else assume.
+            # We strictly need: which col is from which table.
+            
+            def resolve_col(raw, t1, t2):
+                if '.' in raw:
+                    t, c = raw.split('.')
+                    if t == t1.name: return c, t1
+                    if t == t2.name: return c, t2
+                    raise ValueError(f"Unknown table alias in '{raw}'")
+                else:
+                    # Ambiguous or implied?
+                    # For inner_join method we need explicit "left_col" (on self) and "right_col" (on other).
+                    # This is tricky if parser doesn't know which is which.
+                    # We'll try to guess based on schema?
+                    if raw in t1.column_names and raw not in t2.column_names: return raw, t1
+                    if raw in t2.column_names and raw not in t1.column_names: return raw, t2
+                    if raw in t1.column_names and raw in t2.column_names: 
+                        # Ambiguous: Assume Left = Left Arg, Right = Right Arg?
+                        # Dangerous. Let's just return raw and let caller decide?
+                        # inner_join expects (left_col, right_col).
+                        return raw, None 
+                    raise ValueError(f"Column '{raw}' not found in tables")
+
+            # We need to pass 'left_col' (on 'table') and 'right_col' (on 'other_table')
+            # The parser gives us two expressions: l_on, r_on.
+            # They could be in any order: "ON t1.id = t2.id" or "ON t2.id = t1.id"
+            
+            c1_name, c1_table = resolve_col(l_on, table, other_table)
+            c2_name, c2_table = resolve_col(r_on, table, other_table)
+            
+            final_left = None
+            final_right = None
+            
+            if c1_table == table: final_left = c1_name
+            elif c1_table == other_table: final_right = c1_name
+            
+            if c2_table == table: final_left = c2_name
+            elif c2_table == other_table: final_right = c2_name
+            
+            if not final_left or not final_right:
+                # Fallback: simple heuristic matching
+                # If we parsed "id = uid", and table has id, other has uid
+                if c1_table is None and c2_table is None:
+                     # Check existence
+                     if c1_name in table.column_names and c2_name in other_table.column_names:
+                         final_left, final_right = c1_name, c2_name
+                     elif c2_name in table.column_names and c1_name in other_table.column_names:
+                         final_left, final_right = c2_name, c1_name
+            
+            if not final_left or not final_right:
+                 raise ValueError("Could not resolve JOIN columns. Please use fully qualified names (table.col).")
+                 
+            return table.inner_join(other_table, final_left, final_right, columns, where)
+            
         return table.select(columns, where)
 
     def _execute_update(self, parsed: Dict[str, Any]) -> str:

@@ -63,7 +63,7 @@ def _parse_key_value_pairs(clause_str: str, delimiter_regex: str) -> Dict[str, A
         if not part.strip():
             continue
             
-        m = re.match(r"(\w+)\s*=\s*(.+)", part.strip())
+        m = re.match(r"([\w\.]+)\s*=\s*(.+)", part.strip())
         if not m:
              raise ValueError(f"Invalid condition: {part}")
         
@@ -133,27 +133,54 @@ def parse_insert(sql: str) -> Dict[str, Any]:
 
 def parse_select(sql: str) -> Dict[str, Any]:
     """
-    Parses regex for: SELECT col1, col2 FROM table [WHERE condition]
+    Parses regex for: SELECT col1, col2, ... FROM table [JOIN table2 ON condition] [WHERE condition]
     """
-    pattern = r"SELECT\s+(.+)\s+FROM\s+(\w+)(?:\s+WHERE\s+(.+))?"
+    # Regex groups:
+    # 1. Columns
+    # 2. Main Table
+    # 3. Join Table (Optional)
+    # 4. Join Condition (Optional)
+    # 5. Where Clause (Optional)
+    
+    # Note: Regex complexity rises. Using non-greedy match for columns/tables.
+    pattern = r"SELECT\s+(.+?)\s+FROM\s+(\w+)(?:\s+JOIN\s+(\w+)\s+ON\s+(.+?))?(?:\s+WHERE\s+(.+))?$"
     match = re.search(pattern, sql, re.IGNORECASE)
     if not match:
          raise ValueError("Invalid SELECT syntax")
          
     cols_str = match.group(1).strip()
     table_name = match.group(2)
-    where_clause = match.group(3)
+    join_table = match.group(3)
+    join_on = match.group(4)
+    where_clause = match.group(5)
     
     if cols_str == '*':
         columns = None
     else:
         columns = [c.strip() for c in cols_str.split(',')]
         
+    # Join Condition Parsing (expect: t1.c1 = t2.c2)
+    join_info = None
+    if join_table and join_on:
+        # Simple parser for "colA = colB"
+        # We need raw strings for columns here (no type conversion to int/bool)
+        m_on = re.match(r"(.+?)\s*=\s*(.+)", join_on)
+        if not m_on:
+             raise ValueError(f"Invalid ON condition: {join_on}")
+        left_on = m_on.group(1).strip()
+        right_on = m_on.group(2).strip()
+        join_info = {
+            "table": join_table,
+            "on_left": left_on,
+            "on_right": right_on
+        }
+        
     return {
         "command": "SELECT",
         "table": table_name,
         "columns": columns,
-        "where": _parse_where(where_clause)
+        "where": _parse_where(where_clause),
+        "join": join_info
     }
 
 def parse_update(sql: str) -> Dict[str, Any]:
