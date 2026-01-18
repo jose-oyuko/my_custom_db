@@ -59,22 +59,35 @@ python app.py
 
 Then open `http://127.0.0.1:5000` in your browser.
 
-## 📸 Screenshots
+### Running with Docker 🐳
 
-### Dashboard (Analytics View)
-![Dashboard](file:///C:/Users/Administrator/.gemini/antigravity/brain/9ca97da7-9ed9-4d68-89fa-037910971010/dashboard_page_1768566977944.png)
+**Option 1: Docker Compose (Recommended)**
+```bash
+# Build and start the container
+docker-compose up --build
 
-Real-time transaction monitoring with JOIN queries displaying merchant names alongside payment data.
+# Access the app at http://localhost:5000
 
-### Merchant Management
-![Merchants](file:///C:/Users/Administrator/.gemini/antigravity/brain/9ca97da7-9ed9-4d68-89fa-037910971010/merchants_page_1768566988226.png)
+# Stop the container
+docker-compose down
+```
 
-Full CRUD operations: Create merchants, update commission rates, view all businesses.
+**Option 2: Docker CLI**
+```bash
+# Build the image
+docker build -t mydb-app .
 
-### POS Terminal
-![Terminal](file:///C:/Users/Administrator/.gemini/antigravity/brain/9ca97da7-9ed9-4d68-89fa-037910971010/terminal_page_1768566999129.png)
+# Run the container
+docker run -p 5000:5000 -v $(pwd)/pesapal_demo.josedb:/app/pesapal_demo.josedb mydb-app
 
-Simulate payment transactions with instant persistence to the database.
+# Access the app at http://localhost:5000
+```
+
+**Benefits:**
+- ✅ No Python installation required
+- ✅ Consistent environment across machines
+- ✅ Data persists via volume mounting
+- ✅ Easy deployment to cloud platforms
 
 ## 📁 Project Structure
 

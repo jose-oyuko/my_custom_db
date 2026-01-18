@@ -1,0 +1,13 @@
+services:
+  mydb-app:
+    build: .
+    container_name: mini-pesapal
+    ports:
+      - "5000:5000"
+    volumes:
+      # Mount database file to persist data
+      - ./pesapal_demo.josedb:/app/pesapal_demo.josedb
+    environment:
+      - FLASK_ENV=development
+    restart: unless-stopped
+
