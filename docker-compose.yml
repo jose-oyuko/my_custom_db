@@ -1,7 +1,7 @@
 services:
-  mydb-app:
+  web:
     build: .
-    container_name: mini-pesapal
+    container_name: mini-pesapal-web
     ports:
       - "5000:5000"
     volumes:
@@ -10,4 +10,16 @@ services:
     environment:
       - FLASK_ENV=development
     restart: unless-stopped
+
+  repl:
+    build: .
+    container_name: mini-pesapal-repl
+    stdin_open: true  # Keep stdin open (like -i flag)
+    tty: true         # Allocate pseudo-TTY (like -t flag)
+    volumes:
+      # Share the same database file with web service
+      - ./pesapal_demo.josedb:/app/pesapal_demo.josedb
+    command: python main.py pesapal_demo.josedb
+    profiles:
+      - repl  # Don't start automatically with 'up', only with explicit 'run' or 'up --profile repl'
 

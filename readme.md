@@ -61,9 +61,9 @@ Then open `http://127.0.0.1:5000` in your browser.
 
 ### Running with Docker 🐳
 
-**Option 1: Docker Compose (Recommended)**
+**Starting the Web Application:**
 ```bash
-# Build and start the container
+# Build and start the Flask web app
 docker-compose up --build
 
 # Access the app at http://localhost:5000
@@ -72,15 +72,36 @@ docker-compose up --build
 docker-compose down
 ```
 
-**Option 2: Docker CLI**
+**Starting the Interactive REPL:**
+```bash
+# Option 1: Using docker-compose run (Recommended)
+docker-compose run --rm repl
+
+# Option 2: Using docker-compose with profile
+docker-compose --profile repl up
+
+# Exit REPL with .exit command
+```
+
+**Running Both Simultaneously:**
+```bash
+# Terminal 1: Start web app
+docker-compose up
+
+# Terminal 2: Start REPL (in separate terminal)
+docker-compose run --rm repl
+```
+
+**Alternative - Docker CLI:**
 ```bash
 # Build the image
 docker build -t mydb-app .
 
-# Run the container
+# Run web app
 docker run -p 5000:5000 -v $(pwd)/pesapal_demo.josedb:/app/pesapal_demo.josedb mydb-app
 
-# Access the app at http://localhost:5000
+# Run REPL (interactive)
+docker run -it -v $(pwd)/pesapal_demo.josedb:/app/pesapal_demo.josedb mydb-app python main.py pesapal_demo.josedb
 ```
 
 **Benefits:**
@@ -88,6 +109,7 @@ docker run -p 5000:5000 -v $(pwd)/pesapal_demo.josedb:/app/pesapal_demo.josedb m
 - ✅ Consistent environment across machines
 - ✅ Data persists via volume mounting
 - ✅ Easy deployment to cloud platforms
+- ✅ Both web and REPL modes available
 
 ## 📁 Project Structure
 
