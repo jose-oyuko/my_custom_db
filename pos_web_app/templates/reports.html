@@ -5,33 +5,24 @@
 {% block content %}
 <div class="bg-white rounded-lg shadow-sm p-6">
     <h3 class="text-2xl font-bold text-gray-800 mb-4">📊 Sales Reports & Analytics</h3>
-    <p class="text-gray-600">Reports dashboard will be implemented in Phase 5.</p>
 
-    <div class="mt-6 p-4 bg-purple-50 border border-purple-200 rounded">
-        <p class="text-sm text-purple-800">
-            <strong>Preview:</strong> This page will have:<br>
-            • Today's revenue and transaction count<br>
-            • Best-selling products (using JOINs!)<br>
-            • Sales history with receipt search
-        </p>
-    </div>
-
-    <!-- Placeholder summary cards -->
-    <div class="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
+    <!-- Summary cards -->
+    <div class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-6">
         <div class="bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-lg p-6">
             <h4 class="text-sm opacity-80">Today's Revenue</h4>
-            <p class="text-3xl font-bold mt-2">KES 0</p>
-            <p class="text-xs opacity-70 mt-1">No sales yet</p>
+            <p class="text-3xl font-bold mt-2">KES {{ today_revenue }}</p>
+            <p class="text-xs opacity-70 mt-1">{{ today_count }} transactions</p>
         </div>
         <div class="bg-gradient-to-br from-green-500 to-green-600 text-white rounded-lg p-6">
-            <h4 class="text-sm opacity-80">Transactions</h4>
+            <h4 class="text-sm opacity-80">Total Transactions</h4>
             <p class="text-3xl font-bold mt-2">{{ sales|length }}</p>
-            <p class="text-xs opacity-70 mt-1">Total sales recorded</p>
+            <p class="text-xs opacity-70 mt-1">All time sales</p>
         </div>
         <div class="bg-gradient-to-br from-purple-500 to-purple-600 text-white rounded-lg p-6">
-            <h4 class="text-sm opacity-80">Best Seller</h4>
-            <p class="text-3xl font-bold mt-2">TBD</p>
-            <p class="text-xs opacity-70 mt-1">Will use JOIN query</p>
+            <h4 class="text-sm opacity-80">Total Revenue</h4>
+            {% set all_revenue = sales | map(attribute='total_amount') | map('int') | sum %}
+            <p class="text-3xl font-bold mt-2">KES {{ all_revenue }}</p>
+            <p class="text-xs opacity-70 mt-1">Lifetime earnings</p>
         </div>
     </div>
 

@@ -3,31 +3,114 @@
 {% set title = "Cashier - Point of Sale" %}
 
 {% block content %}
-<div class="bg-white rounded-lg shadow-sm p-6">
-    <h3 class="text-2xl font-bold text-gray-800 mb-4">🛒 POS Terminal</h3>
-    <p class="text-gray-600">Cashier interface will be implemented in Phase 4.</p>
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-    <div class="mt-6 p-4 bg-blue-50 border border-blue-200 rounded">
-        <p class="text-sm text-blue-800">
-            <strong>Preview:</strong> This page will have:<br>
-            • Product search/grid<br>
-            • Shopping cart<br>
-            • Checkout with payment method selection
-        </p>
+    <!-- Left Side: Product Grid -->
+    <div class="lg:col-span-2">
+        <div class="bg-white rounded-lg shadow-sm p-6">
+            <h3 class="text-xl font-bold text-gray-800 mb-4">🛍️ Select Products</h3>
+
+            <!-- Product Grid -->
+            <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                {% for p in products %}
+                <div
+                    class="bg-gradient-to-br from-white to-gray-50 border border-gray-200 rounded-lg p-4 hover:shadow-md transition cursor-pointer">
+                    <div class="flex flex-col h-full">
+                        <h4 class="font-semibold text-gray-800 text-sm">{{ p.name }}</h4>
+                        <p class="text-xs text-gray-500 mt-1">{{ p.category }}</p>
+                        <p class="text-green-600 font-bold text-lg mt-2">KES {{ p.price }}</p>
+
+                        <!-- Stock indicator -->
+                        {% if p.stock > 0 %}
+                        <p class="text-xs text-gray-400 mt-1">Stock: {{ p.stock }}</p>
+                        <a href="{{ url_for('add_to_cart', product_id=p.id) }}"
+                            class="mt-2 bg-posblue text-white text-center py-2 px-3 rounded text-sm font-medium hover:bg-blue-700 transition">
+                            Add to Cart
+                        </a>
+                        {% else %}
+                        <p class="text-xs text-red-500 mt-1">Out of Stock</p>
+                        <button disabled
+                            class="mt-2 bg-gray-300 text-gray-500 text-center py-2 px-3 rounded text-sm cursor-not-allowed">
+                            Unavailable
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
     </div>
 
-    <!-- Quick product list preview -->
-    <div class="mt-8">
-        <h4 class="text-lg font-semibold mb-3">Available Products ({{ products|length }})</h4>
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {% for p in products[:8] %}
-            <div class="bg-gray-50 p-3 rounded border hover:shadow-md transition">
-                <p class="font-medium text-sm">{{ p.name }}</p>
-                <p class="text-xs text-gray-500">{{ p.category }}</p>
-                <p class="text-green-600 font-bold mt-1">KES {{ p.price }}</p>
-                <p class="text-xs text-gray-400">Stock: {{ p.stock }}</p>
+    <!-- Right Side: Shopping Cart -->
+    <div class="lg:col-span-1">
+        <div class="bg-white rounded-lg shadow-lg p-6 sticky top-6">
+            <h3 class="text-xl font-bold text-gray-800 mb-4">🛒 Cart</h3>
+
+            <!-- Cart Items -->
+            {% if cart_items %}
+            <div class="space-y-3 mb-4 max-h-64 overflow-y-auto">
+                {% for item in cart_items %}
+                <div class="bg-gray-50 p-3 rounded border">
+                    <div class="flex justify-between items-start mb-2">
+                        <div class="flex-1">
+                            <p class="font-medium text-sm">{{ item.name }}</p>
+                            <p class="text-xs text-gray-500">KES {{ item.price }} × {{ item.quantity }}</p>
+                        </div>
+                        <a href="{{ url_for('remove_from_cart', product_id=item.id) }}"
+                            class="text-red-500 hover:text-red-700 text-xs ml-2">✕</a>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-2">
+                            <a href="{{ url_for('update_cart', product_id=item.id, quantity=item.quantity-1) }}"
+                                class="bg-gray-200 hover:bg-gray-300 w-6 h-6 flex items-center justify-center rounded text-sm">−</a>
+                            <span class="text-sm font-medium w-8 text-center">{{ item.quantity }}</span>
+                            <a href="{{ url_for('update_cart', product_id=item.id, quantity=item.quantity+1) }}"
+                                class="bg-gray-200 hover:bg-gray-300 w-6 h-6 flex items-center justify-center rounded text-sm">+</a>
+                        </div>
+                        <p class="font-bold text-green-600">KES {{ item.subtotal }}</p>
+                    </div>
+                </div>
+                {% endfor %}
             </div>
-            {% endfor %}
+
+            <!-- Total -->
+            <div class="border-t pt-4 mb-4">
+                <div class="flex justify-between items-center text-xl font-bold">
+                    <span>Total:</span>
+                    <span class="text-posgreen">KES {{ cart_total }}</span>
+                </div>
+            </div>
+
+            <!-- Checkout Form -->
+            <form method="POST" action="{{ url_for('checkout') }}" class="space-y-3">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Customer Name</label>
+                    <input type="text" name="customer_name" placeholder="Optional"
+                        class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-posblue text-sm">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Payment Method</label>
+                    <select name="payment_method" required
+                        class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-posblue text-sm">
+                        <option value="Cash">Cash</option>
+                        <option value="Card">Card</option>
+                        <option value="M-Pesa">M-Pesa</option>
+                    </select>
+                </div>
+
+                <button type="submit"
+                    class="w-full bg-posgreen text-white font-bold py-3 rounded hover:bg-green-600 transition text-sm">
+                    🎯 Complete Sale - KES {{ cart_total }}
+                </button>
+            </form>
+            {% else %}
+            <div class="text-center py-8 text-gray-400">
+                <p class="text-4xl mb-2">🛒</p>
+                <p class="text-sm">Cart is empty</p>
+                <p class="text-xs mt-1">Add products from the left</p>
+            </div>
+            {% endif %}
         </div>
     </div>
 </div>
