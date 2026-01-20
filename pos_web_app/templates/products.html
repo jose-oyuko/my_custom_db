@@ -1,0 +1,57 @@
+{% extends "layout.html" %}
+
+{% set title = "Product Management" %}
+
+{% block content %}
+<div class="bg-white rounded-lg shadow-sm p-6">
+    <h3 class="text-2xl font-bold text-gray-800 mb-4">📦 Product Management</h3>
+    <p class="text-gray-600">Product CRUD interface will be implemented in Phase 3.</p>
+
+    <div class="mt-6 p-4 bg-green-50 border border-green-200 rounded">
+        <p class="text-sm text-green-800">
+            <strong>Preview:</strong> This page will have:<br>
+            • Add new product form<br>
+            • Edit/Delete existing products<br>
+            • Low stock indicators
+        </p>
+    </div>
+
+    <!-- Product list preview -->
+    <div class="mt-8">
+        <h4 class="text-lg font-semibold mb-3">Current Products ({{ products|length }})</h4>
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="bg-gray-50 text-gray-600 text-xs uppercase">
+                        <th class="px-4 py-3">ID</th>
+                        <th class="px-4 py-3">Name</th>
+                        <th class="px-4 py-3">SKU</th>
+                        <th class="px-4 py-3">Category</th>
+                        <th class="px-4 py-3">Price</th>
+                        <th class="px-4 py-3">Stock</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200">
+                    {% for p in products %}
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-4 py-3 text-gray-500">{{ p.id }}</td>
+                        <td class="px-4 py-3 font-medium">{{ p.name }}</td>
+                        <td class="px-4 py-3 text-sm text-gray-500">{{ p.sku }}</td>
+                        <td class="px-4 py-3">
+                            <span class="px-2 py-1 text-xs rounded bg-blue-100 text-blue-800">{{ p.category }}</span>
+                        </td>
+                        <td class="px-4 py-3 font-bold text-green-600">KES {{ p.price }}</td>
+                        <td class="px-4 py-3">
+                            {% if p.stock < 10 %} <span class="text-red-600 font-semibold">{{ p.stock }} ⚠️</span>
+                                {% else %}
+                                <span class="text-gray-700">{{ p.stock }}</span>
+                                {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,71 @@
+{% extends "layout.html" %}
+
+{% set title = "Sales Reports" %}
+
+{% block content %}
+<div class="bg-white rounded-lg shadow-sm p-6">
+    <h3 class="text-2xl font-bold text-gray-800 mb-4">📊 Sales Reports & Analytics</h3>
+    <p class="text-gray-600">Reports dashboard will be implemented in Phase 5.</p>
+
+    <div class="mt-6 p-4 bg-purple-50 border border-purple-200 rounded">
+        <p class="text-sm text-purple-800">
+            <strong>Preview:</strong> This page will have:<br>
+            • Today's revenue and transaction count<br>
+            • Best-selling products (using JOINs!)<br>
+            • Sales history with receipt search
+        </p>
+    </div>
+
+    <!-- Placeholder summary cards -->
+    <div class="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-lg p-6">
+            <h4 class="text-sm opacity-80">Today's Revenue</h4>
+            <p class="text-3xl font-bold mt-2">KES 0</p>
+            <p class="text-xs opacity-70 mt-1">No sales yet</p>
+        </div>
+        <div class="bg-gradient-to-br from-green-500 to-green-600 text-white rounded-lg p-6">
+            <h4 class="text-sm opacity-80">Transactions</h4>
+            <p class="text-3xl font-bold mt-2">{{ sales|length }}</p>
+            <p class="text-xs opacity-70 mt-1">Total sales recorded</p>
+        </div>
+        <div class="bg-gradient-to-br from-purple-500 to-purple-600 text-white rounded-lg p-6">
+            <h4 class="text-sm opacity-80">Best Seller</h4>
+            <p class="text-3xl font-bold mt-2">TBD</p>
+            <p class="text-xs opacity-70 mt-1">Will use JOIN query</p>
+        </div>
+    </div>
+
+    <!-- Sales history preview -->
+    {% if sales|length > 0 %}
+    <div class="mt-8">
+        <h4 class="text-lg font-semibold mb-3">Recent Sales</h4>
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="bg-gray-50 text-gray-600 text-xs uppercase">
+                        <th class="px-4 py-3">Receipt No</th>
+                        <th class="px-4 py-3">Customer</th>
+                        <th class="px-4 py-3">Payment</th>
+                        <th class="px-4 py-3">Total</th>
+                        <th class="px-4 py-3">Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for s in sales %}
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-4 py-3 font-mono text-sm">{{ s.receipt_no }}</td>
+                        <td class="px-4 py-3">{{ s.customer_name or 'Guest' }}</td>
+                        <td class="px-4 py-3">{{ s.payment_method }}</td>
+                        <td class="px-4 py-3 font-bold text-green-600">KES {{ s.total_amount }}</td>
+                        <td class="px-4 py-3 text-sm text-gray-500">{{ s.sale_date }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% else %}
+    <p class="mt-8 text-gray-500 text-center py-8">No sales recorded yet. Make a sale from the POS page!</p>
+    {% endif %}
+</div>
+{% endblock %}

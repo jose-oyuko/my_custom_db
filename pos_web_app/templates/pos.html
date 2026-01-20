@@ -1,0 +1,34 @@
+{% extends "layout.html" %}
+
+{% set title = "Cashier - Point of Sale" %}
+
+{% block content %}
+<div class="bg-white rounded-lg shadow-sm p-6">
+    <h3 class="text-2xl font-bold text-gray-800 mb-4">🛒 POS Terminal</h3>
+    <p class="text-gray-600">Cashier interface will be implemented in Phase 4.</p>
+
+    <div class="mt-6 p-4 bg-blue-50 border border-blue-200 rounded">
+        <p class="text-sm text-blue-800">
+            <strong>Preview:</strong> This page will have:<br>
+            • Product search/grid<br>
+            • Shopping cart<br>
+            • Checkout with payment method selection
+        </p>
+    </div>
+
+    <!-- Quick product list preview -->
+    <div class="mt-8">
+        <h4 class="text-lg font-semibold mb-3">Available Products ({{ products|length }})</h4>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {% for p in products[:8] %}
+            <div class="bg-gray-50 p-3 rounded border hover:shadow-md transition">
+                <p class="font-medium text-sm">{{ p.name }}</p>
+                <p class="text-xs text-gray-500">{{ p.category }}</p>
+                <p class="text-green-600 font-bold mt-1">KES {{ p.price }}</p>
+                <p class="text-xs text-gray-400">Stock: {{ p.stock }}</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}
